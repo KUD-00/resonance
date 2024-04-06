@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: info
+spec:
+  selector:
+    matchLabels:
+      app: info
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: info
+    spec:
+      containers:
+      - name: info
+        image: info:local
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+        - containerPort: 50051
+        env:
+        - name: REDIS_HOST
+          value: "redis"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: info
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 8080
+    targetPort: 8080
+    name: http
+  - port: 50051
+    targetPort: 50051
+    name: grpc
+  selector:
+    app: info

@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+package api;
+option go_package = "github.com/KUD-00/resonance/api";
+
+message PriceHistory {
+  int64 price = 1; // 价格
+  int64 time = 2;  // 时间戳
+}
+
+message Producer {
+  map<string, int64> producer = 1;
+}
+
+message Good {
+  string GoodUniqueId = 1;
+  string Name = 2;
+  string Description = 3;
+  bool IsSpeciality = 4;
+  double QuotationVariation = 5;
+  double FastQuotationVariation = 6;
+  repeated Producer ProducerList = 7;
+}
+
+message BuyGood {
+  string GoodId = 1;
+  string Name = 2;
+  string StationId = 3;
+  int64 BaseBuyPrice = 4;
+  int64 BuyPrice = 5;
+  repeated PriceHistory BuyPriceHistory = 6;
+  double QuotationVariation = 7;
+  double FastQuotationVariation = 8;
+  double MinQuotation = 9;
+  double MaxQuotation = 10;
+  string GoodUniqueId = 11;
+}
+
+message SellGood {
+  string GoodId = 1;
+  string Name = 2;
+  string StationId = 3;
+  int64 BaseSellPrice = 4;
+  int64 SellPrice = 5;
+  repeated PriceHistory SellPriceHistory = 6;
+  double QuotationVariation = 7;
+  double FastQuotationVariation = 8;
+  double MinQuotation = 9;
+  double MaxQuotation = 10;
+  string GoodUniqueId = 11;
+}
+
+message Station {
+  string StationId = 1;
+  string Name = 2;
+  string Description = 3;
+  string AttachedToCity = 4;
+  repeated string SellList = 5;
+  repeated string AcquisitionList = 6; // 同上
+}
+
+service InfoService {
+  rpc GetSellGoods(GetSellGoodsRequest) returns (GetSellGoodsResponse) {}
+  rpc GetBuyGoods(GetBuyGoodsRequest) returns (GetBuyGoodsResponse) {}
+  rpc GetStations(GetStationsRequest) returns (GetStationsResponse) {}
+}
+
+message GetSellGoodsRequest {
+  string stationId = 1;
+  string goodUniqueId = 2;
+}
+
+message GetSellGoodsResponse {
+  repeated SellGood goods = 1;
+}
+
+message GetBuyGoodsRequest {
+  string stationId = 1;
+  string goodUniqueId = 2;
+}
+
+message GetBuyGoodsResponse {
+  repeated BuyGood goods = 1;
+}
+
+message GetStationsRequest {
+  string stationId = 1;
+}
+
+message GetStationsResponse {
+  repeated Station stations = 1;
+}

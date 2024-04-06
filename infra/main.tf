@@ -1,0 +1,180 @@
+terraform {
+  required_version = ">= 1.0.0, < 2.0.0"
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 4.0"
+    }
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "~> 2.0"
+    }
+  }
+}
+
+provider "aws" {
+  # Tokyo
+  region = "ap-northeast-1"
+}
+
+# We need to authenticate to the EKS cluster, but only after it has been created. We accomplish this by using the
+# aws_eks_cluster_auth data source and having it depend on an output of the eks-cluster module.
+
+provider "kubernetes" {
+  host = module.eks_cluster.cluster_endpoint
+  cluster_ca_certificate = base64decode(
+    module.eks_cluster.cluster_certificate_authority[0].data
+  )
+  token = data.aws_eks_cluster_auth.cluster.token
+}
+
+data "aws_eks_cluster_auth" "cluster" {
+  name = module.eks_cluster.cluster_name
+}
+
+module "eks_cluster" {
+  source = "./modules/eks"
+
+  name = "resonance"
+
+  min_size     = 1
+  max_size     = 2
+  desired_size = 1
+
+  # Due to the way EKS works with ENIs, t3.small is the smallest
+  # instance type that can be used for worker nodes. If you try
+  # something smaller like t2.micro, which only has 4 ENIs,
+  # they'll all be used up by system services (e.g., kube-proxy)
+  # and you won't be able to deploy your own Pods.
+  instance_types = ["t3.small"]
+}
+
+provider "helm" {
+  kubernetes {
+    config_path = "~/.kube/config"
+  }
+}
+
+module "nginx-controller" {
+  source  = "terraform-iaac/nginx-controller/helm"
+
+  additional_set = [
+    {
+      name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-type"
+      value = "nlb"
+      type  = "string"
+    },
+    {
+      name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-cross-zone-load-balancing-enabled"
+      value = "true"
+      type  = "string"
+    }
+  ]
+}
+
+module "redis-service" {
+  source = "./modules/k8s"
+
+  name = "redis"
+
+  image          = "redis:alpine"
+  replicas       = 1
+  container_port = 6379
+  service_port = 6379
+  service_type = "ClusterIP"
+
+  environment_variables = {
+    PROVIDER = "Terraform"
+  }
+}
+
+
+module "info-service" {
+  source = "./modules/k8s"
+
+  name = "info"
+
+  image          = "ghcr.io/kud-00/resonance/info:main"
+  replicas       = 1
+  container_port = 5000
+
+  environment_variables = {
+    PROVIDER = "Terraform"
+  }
+
+  depends_on = [
+    module.redis-service
+  ]
+}
+
+module "calculate-service" {
+  source = "./modules/k8s"
+
+  name = "calculate"
+
+  image          = "ghcr.io/kud-00/resonance/calculate:main"
+  replicas       = 1
+  container_port = 5000
+
+  environment_variables = {
+    PROVIDER = "Terraform"
+  }
+
+  depends_on = [
+    module.info-service
+  ]
+}
+
+module "k8s_ingress" {
+  source = "./modules/k8s-ingress"
+
+  domain = "api.resonance.rughzenhaide.com"
+  services = [
+    {
+      name = "info"
+      port = 5000
+      path = "/goodsinfo"
+    },
+    {
+      name = "calculate"
+      port = 5000
+      path = "/route"
+    }
+  ]
+}
+
+/* module "api-gateway" {
+  source = "./modules/api-gateway"
+  api_name        = "Resonance-API"
+  api_description = "API for multiple services in resonance"
+  stage_name      = "v1"
+  domain = "api.resonance.rughzenhaide.com"
+  arn = "arn:aws:acm:ap-northeast-1:585815815211:certificate/f766e45a-cbe2-4b52-b5ef-1610bf4a1227"
+
+  services = [
+    {
+      path_part = "goodsinfo"
+      uri       = "http://service1.your-eks-cluster.com"
+      methods   = ["GET", "POST"]
+    },
+    {
+      path_part = "route"
+      uri       = "http://service2.your-eks-cluster.com"
+      methods   = ["GET"]
+    }
+  ]
+}
+ */
+
+/* resource "aws_route53_zone" "resonance" {
+  name = "resonance.rughzenhaide.com"
+}
+
+resource "aws_route53_record" "resonance" {
+  zone_id = aws_route53_zone.resonance.zone_id
+  name    = "api.resonance.rughzenhaide.com"
+  type    = "CNAME"
+  ttl     = "300"
+  records = ["your-ingress-controller-external-dns-name.amazonaws.com"]
+} */
