@@ -24,7 +24,7 @@ func main() {
 
 	http.HandleFunc("/goods", handleGoodsRequest)
 	http.HandleFunc("/profit", handleProfitRequest)
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	if err := http.ListenAndServe(":80", nil); err != nil {
 		log.Fatalf("无法启动 HTTP 服务器: %v", err)
 	}
 }
