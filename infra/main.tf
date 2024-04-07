@@ -80,9 +80,15 @@ module "redis-service" {
 
   image          = "redis:alpine"
   replicas       = 1
-  container_port = 6379
-  service_port = 6379
   service_type = "ClusterIP"
+
+  port = [
+    {
+      name = "redis"
+      container_port = 6379
+      service_port = 6379
+    }
+  ]
 
   environment_variables = {
     PROVIDER = "Terraform"
@@ -97,7 +103,19 @@ module "info-service" {
 
   image          = "ghcr.io/kud-00/resonance/info:main"
   replicas       = 1
-  container_port = 5000
+
+  port = [
+    {
+      name = "http"
+      container_port = 80
+      service_port = 80
+    },
+    {
+      name = "grpc"
+      container_port = 50051
+      service_port = 50051
+    }
+  ]
 
   environment_variables = {
     PROVIDER = "Terraform"
@@ -115,7 +133,13 @@ module "calculate-service" {
 
   image          = "ghcr.io/kud-00/resonance/calculate:main"
   replicas       = 1
-  container_port = 5000
+  port = [
+    {
+      name = "http",
+      container_port = 80
+      service_port = 80
+    }
+  ]
 
   environment_variables = {
     PROVIDER = "Terraform"
@@ -133,12 +157,12 @@ module "k8s_ingress" {
   services = [
     {
       name = "info"
-      port = 5000
+      port = 80
       path = "/goodsinfo"
     },
     {
       name = "calculate"
-      port = 5000
+      port = 80
       path = "/route"
     }
   ]

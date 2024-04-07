@@ -8,11 +8,6 @@ variable "image" {
   type        = string
 }
 
-variable "container_port" {
-  description = "The port the Docker image listens on"
-  type        = number
-}
-
 variable "replicas" {
   description = "How many replicas to run"
   type        = number
@@ -30,8 +25,11 @@ variable "service_type" {
   default     = "LoadBalancer"
 }
 
-variable "service_port" {
-  description = "The port the service listens on"
-  type        = number
-  default     = 80
+variable "port" {
+  description = "A list of maps, each containing the port configuration"
+  type = list(object({
+    name = string
+    container_port = number
+    service_port = number
+  }))
 } 

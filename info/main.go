@@ -192,5 +192,7 @@ func main() {
 		}
 	})
 
-	log.Fatal(http.ListenAndServe(":80", nil))
+	if err := http.ListenAndServe(":80", nil); err != nil {
+		log.Fatalf("无法启动 HTTP 服务器: %v", err)
+	}
 }

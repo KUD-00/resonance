@@ -23,6 +23,10 @@ resource "kubernetes_deployment" "app" {
   spec {
     replicas = var.replicas
 
+    selector {
+      match_labels = local.pod_labels
+    }
+
     template {
       metadata {
         labels = local.pod_labels
@@ -32,9 +36,13 @@ resource "kubernetes_deployment" "app" {
         container {
           name  = var.name
           image = var.image
+          image_pull_policy = "Always"
 
-          port {
-            container_port = var.container_port
+          dynamic "port" {
+            for_each = var.port
+            content {
+              container_port = port.value["container_port"]
+            }
           }
 
           dynamic "env" {
@@ -47,10 +55,6 @@ resource "kubernetes_deployment" "app" {
         }
       }
     }
-
-    selector {
-      match_labels = local.pod_labels
-    }
   }
 }
 
@@ -61,11 +65,17 @@ resource "kubernetes_service" "app" {
 
   spec {
     type = var.service_type
-    port {
-      port        = var.service_port
-      target_port = var.container_port
-      protocol    = "TCP"
+
+    dynamic "port" {
+      for_each = var.port
+      content {
+        name       = port.value["name"]
+        port       = port.value["service_port"]
+        target_port = port.value["container_port"]
+        protocol   = "TCP"
+      }
     }
+
     selector = local.pod_labels
   }
 }
