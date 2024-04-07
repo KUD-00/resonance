@@ -114,6 +114,7 @@ func (s *server) GetStations(ctx context.Context, in *api.GetStationsRequest) (*
 var ctx = context.Background()
 
 func main() {
+	log.Println("Initialize the info service")
 	rdb = redis.NewClient(&redis.Options{
 		Addr:     "redis:6379",
 		Password: "", // no password set
@@ -148,6 +149,42 @@ func main() {
 		log.Fatalf("Failed to initialize goods quotation data: %v", initialGoodsQuotationErr)
 	}
 
+	go func() {
+		log.Println("Starting HTTP server on port 8080")
+		http.HandleFunc("/goods", func(w http.ResponseWriter, r *http.Request) {
+			if r.Method == "GET" {
+				http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			} else if r.Method == "POST" {
+				priceInfosStr := r.FormValue("priceInfos")
+				action := r.FormValue("action")
+
+				var priceInfos []utils.PriceInfo
+
+				err := json.Unmarshal([]byte(priceInfosStr), &priceInfos)
+				if err != nil {
+					log.Printf("Error unmarshalling priceInfos: %v", err)
+					http.Error(w, "Invalid input", http.StatusBadRequest)
+					return
+				}
+
+				if action == "buy" {
+					utils.UpdateBuyGoodPrice(rdb, priceInfos)
+				} else if action == "sell" {
+					// TODO:
+					http.Error(w, "Invalid action", http.StatusBadRequest)
+				} else {
+					http.Error(w, "Invalid action", http.StatusBadRequest)
+				}
+
+			} else {
+				http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			}
+		})
+		if err := http.ListenAndServe(":8080", nil); err != nil {
+			log.Fatalf("Unable to start HTTP server: %v", err)
+		}
+	}()
+
 	// Start the gRPC server
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {
@@ -159,40 +196,5 @@ func main() {
 
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
-	}
-
-	// Start the HTTP server
-	http.HandleFunc("/goods", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == "GET" {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		} else if r.Method == "POST" {
-			priceInfosStr := r.FormValue("priceInfos")
-			action := r.FormValue("action")
-
-			var priceInfos []utils.PriceInfo
-
-			err := json.Unmarshal([]byte(priceInfosStr), &priceInfos)
-			if err != nil {
-				log.Printf("Error unmarshalling priceInfos: %v", err)
-				http.Error(w, "Invalid input", http.StatusBadRequest)
-				return
-			}
-
-			if action == "buy" {
-				utils.UpdateBuyGoodPrice(rdb, priceInfos)
-			} else if action == "sell" {
-				// TODO:
-				http.Error(w, "Invalid action", http.StatusBadRequest)
-			} else {
-				http.Error(w, "Invalid action", http.StatusBadRequest)
-			}
-
-		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
-
-	if err := http.ListenAndServe(":80", nil); err != nil {
-		log.Fatalf("无法启动 HTTP 服务器: %v", err)
 	}
 }

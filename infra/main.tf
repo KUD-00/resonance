@@ -107,7 +107,7 @@ module "info-service" {
   port = [
     {
       name = "http"
-      container_port = 80
+      container_port = 8080
       service_port = 80
     },
     {
