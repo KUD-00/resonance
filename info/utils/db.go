@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/KUD-00/resonance/api"
@@ -87,14 +88,14 @@ func GetStations(rdb *redis.Client) ([]*api.Station, error) {
 	for _, key := range keys {
 		data, err := rdb.HGetAll(ctx, key).Result()
 		if err != nil {
-			return nil, fmt.Errorf("failed to get station data: %w", err)
+			return nil, fmt.Errorf("failed to get goodID: %s 's station data: %w", key, err)
 		}
 
 		var station Station
 		// no string to int64 conversion, can use mapstructure
 		err = mapstructure.Decode(data, &station)
 		if err != nil {
-			return nil, fmt.Errorf("failed to decode station data: %w", err)
+			return nil, fmt.Errorf("failed to decode goodID: %s 's station data: %w", key, err)
 		}
 
 		var sellList []string
@@ -108,7 +109,7 @@ func GetStations(rdb *redis.Client) ([]*api.Station, error) {
 		}
 
 		apiStation := &api.Station{
-			StationId:       key,
+			StationId:       strings.Split(key, ":")[1],
 			Name:            station.Name,
 			Description:     station.Description,
 			AttachedToCity:  station.AttachedToCity,
@@ -296,26 +297,26 @@ func GetBuyGoods(rdb *redis.Client) ([]*api.BuyGood, error) {
 
 		baseBuyPrice, parseErr := strconv.ParseInt(data["BaseBuyPrice"], 10, 64)
 		if parseErr != nil {
-			return nil, fmt.Errorf("failed to parse base buy price: %w", parseErr)
+			return nil, fmt.Errorf("failed to parse goodID: %s 's base buy price: %w", key, parseErr)
 		}
 
 		buyPrice, parseErr := strconv.ParseInt(data["BuyPrice"], 10, 64)
 		if parseErr != nil {
-			return nil, fmt.Errorf("failed to parse buy price: %w", parseErr)
+			return nil, fmt.Errorf("failed to parse goodID: %s 's buy price: %w", key, parseErr)
 		}
 
 		minQuotation, parseErr := strconv.ParseFloat(data["MinQuotation"], 64)
 		if parseErr != nil {
-			return nil, fmt.Errorf("failed to parse min quotation: %w", parseErr)
+			return nil, fmt.Errorf("failed to parse goodID: %s 's min quotation: %w", key, parseErr)
 		}
 
 		maxQuotation, parseErr := strconv.ParseFloat(data["MaxQuotation"], 64)
 		if parseErr != nil {
-			return nil, fmt.Errorf("failed to parse max quotation: %w", parseErr)
+			return nil, fmt.Errorf("failed to parse goodID: %s 's max quotation: %w", key, parseErr)
 		}
 
 		apiGood := &api.BuyGood{
-			GoodId:                 key,
+			GoodId:                 strings.Split(key, ":")[2],
 			Name:                   name,
 			StationId:              data["StationId"],
 			BaseBuyPrice:           baseBuyPrice,
@@ -336,7 +337,7 @@ func GetBuyGoods(rdb *redis.Client) ([]*api.BuyGood, error) {
 func UpdateBuyGoodPrice(rdb *redis.Client, priceInfos []PriceInfo) error {
 	ctx := context.Background()
 	for _, priceInfo := range priceInfos {
-		key := fmt.Sprintf("good:buy:%s", priceInfo.stationId)
+		key := fmt.Sprintf("good:buy:%s", priceInfo.goodId)
 		data, err := rdb.HGetAll(ctx, key).Result()
 
 		var apiBuyPriceHistory []*api.PriceHistory

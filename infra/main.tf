@@ -29,6 +29,12 @@ provider "kubernetes" {
   token = data.aws_eks_cluster_auth.cluster.token
 }
 
+provider "helm" {
+  kubernetes {
+    config_path = "~/.kube/config"
+  }
+}
+
 data "aws_eks_cluster_auth" "cluster" {
   name = module.eks_cluster.cluster_name
 }
@@ -50,9 +56,20 @@ module "eks_cluster" {
   instance_types = ["t3.small"]
 }
 
-provider "helm" {
-  kubernetes {
-    config_path = "~/.kube/config"
+resource "aws_route53_zone" "my_zone" {
+  name = "kud.me"
+}
+
+resource "aws_route53_record" "resonance_alb_a_record" {
+  zone_id = aws_route53_zone.my_zone.zone_id
+  name    = "resonance.kud.me"
+  type    = "A"
+
+// TODO: make this read from the output
+  alias {
+    name                   = "a8bfa593d575443bea86a01f477d7deb-445a98d2bf55def7.elb.ap-northeast-1.amazonaws.com"
+    zone_id                = "Z31USIVHYNEOWT"
+    evaluate_target_health = true
   }
 }
 
