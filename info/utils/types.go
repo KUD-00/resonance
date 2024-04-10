@@ -62,8 +62,8 @@ type PriceHistory struct {
 }
 
 type PriceInfo struct {
-	price  int64
-	goodId string
+	Price  int64
+	GoodId string
 }
 
 type Good struct {

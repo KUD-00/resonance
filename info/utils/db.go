@@ -337,14 +337,21 @@ func GetBuyGoods(rdb *redis.Client) ([]*api.BuyGood, error) {
 func UpdateBuyGoodPrice(rdb *redis.Client, priceInfos []PriceInfo) error {
 	ctx := context.Background()
 	for _, priceInfo := range priceInfos {
-		key := fmt.Sprintf("good:buy:%s", priceInfo.goodId)
+		key := fmt.Sprintf("good:buy:%s", priceInfo.GoodId)
 		data, err := rdb.HGetAll(ctx, key).Result()
+		if err != nil {
+			return fmt.Errorf("error when get buy good data")
+		}
+
+		if len(data) == 0 {
+			return fmt.Errorf("no buy good data found for key: %s", key)
+		}
 
 		var apiBuyPriceHistory []*api.PriceHistory
 		if err := json.Unmarshal([]byte(data["BuyPriceHistory"]), &apiBuyPriceHistory); err != nil {
 			log.Println("failed to unmarshal buy price history")
 		}
-		apiBuyPriceHistory = append(apiBuyPriceHistory, &api.PriceHistory{Price: priceInfo.price, Time: time.Now().Unix()})
+		apiBuyPriceHistory = append(apiBuyPriceHistory, &api.PriceHistory{Price: priceInfo.Price, Time: time.Now().Unix()})
 		// TODO: delete very old price history
 		buyPriceHistoryJson, marshalErr := json.Marshal(apiBuyPriceHistory)
 		if marshalErr != nil {
@@ -352,13 +359,56 @@ func UpdateBuyGoodPrice(rdb *redis.Client, priceInfos []PriceInfo) error {
 		}
 
 		_, setErr := rdb.HSet(ctx, key, map[string]interface{}{
-			"BuyPrice":        priceInfo.price,
+			"BuyPrice":        priceInfo.Price,
 			"BuyPriceHistory": buyPriceHistoryJson,
 		}).Result()
+
 		if setErr != nil {
 			return fmt.Errorf("failed to update buy price: %w", err)
+		} else {
+			log.Printf("Successfully updated buy price for %s", priceInfo.GoodId)
 		}
 	}
+
+	return nil
+}
+
+func UpdateSellGoodPrice(rdb *redis.Client, priceInfos []PriceInfo) error {
+	ctx := context.Background()
+	for _, priceInfo := range priceInfos {
+		key := fmt.Sprintf("good:sell:%s", priceInfo.GoodId)
+		data, err := rdb.HGetAll(ctx, key).Result()
+		if err != nil {
+			return fmt.Errorf("error when get sell good data")
+		}
+
+		if len(data) == 0 {
+			return fmt.Errorf("no sell good data found for key: %s", key)
+		}
+
+		var apiSellPriceHistory []*api.PriceHistory
+		if err := json.Unmarshal([]byte(data["SellPriceHistory"]), &apiSellPriceHistory); err != nil {
+			log.Println("failed to unmarshal sell price history")
+		}
+		apiSellPriceHistory = append(apiSellPriceHistory, &api.PriceHistory{Price: priceInfo.Price, Time: time.Now().Unix()})
+
+		sellPriceHistoryJson, marshalErr := json.Marshal(apiSellPriceHistory)
+		if marshalErr != nil {
+			log.Fatalf("Failed to marshal SellPriceHistory: %v", err)
+		}
+
+		_, setErr := rdb.HSet(ctx, key, map[string]interface{}{
+			"SellPrice":        priceInfo.Price,
+			"SellPriceHistory": sellPriceHistoryJson,
+		}).Result()
+
+		if setErr != nil {
+			return fmt.Errorf("failed to update sell price: %w", err)
+		} else {
+			log.Printf("Successfully updated sell price for %s", priceInfo.GoodId)
+		}
+	}
+
 	return nil
 }
 

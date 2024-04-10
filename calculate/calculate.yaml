@@ -16,8 +16,8 @@ spec:
     spec:
       containers:
       - name: calculate
-        image: ghcr.io/kud-00/resonance/calculate:main
-        imagePullPolicy: Always
+        image: calculate:local
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 80
 

@@ -14,8 +14,8 @@ spec:
     spec:
       containers:
       - name: info
-        image: ghcr.io/kud-00/resonance/info:main
-        imagePullPolicy: Always
+        image: info:local
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
         - containerPort: 50051

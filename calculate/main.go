@@ -22,11 +22,16 @@ func main() {
 
 	client = api.NewInfoServiceClient(conn)
 
-	http.HandleFunc("/goods", handleGoodsRequest)
+	http.HandleFunc("/", handleRootRequest)
+	http.HandleFunc("/calculate", handleGoodsRequest)
 	http.HandleFunc("/profit", handleProfitRequest)
 	if err := http.ListenAndServe(":80", nil); err != nil {
 		log.Fatalf("无法启动 HTTP 服务器: %v", err)
 	}
+}
+
+func handleRootRequest(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "Welcome to the calculate service")
 }
 
 func handleGoodsRequest(w http.ResponseWriter, r *http.Request) {

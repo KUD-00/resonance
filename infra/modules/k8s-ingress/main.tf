@@ -7,20 +7,24 @@ resource "kubernetes_ingress_v1" "ingress" {
   }
 
   spec {
-    rule {
-      host = var.domain
-      http {
-        dynamic "path" {
-          for_each = var.services
+    dynamic "rule" {
+      for_each = var.domains
 
-          content {
-            path     = path.value.path
-            path_type = "Prefix"
-            backend {
-              service {
-                name = path.value.name
-                port {
-                  number = path.value.port
+      content {
+        host = rule.key
+        http {
+          dynamic "path" {
+            for_each = rule.value
+
+            content {
+              path      = path.value.path
+              path_type = "Prefix"
+              backend {
+                service {
+                  name = path.value.name
+                  port {
+                    number = path.value.port
+                  }
                 }
               }
             }

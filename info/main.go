@@ -76,6 +76,16 @@ func (s *server) GetBuyGoods(ctx context.Context, in *api.GetBuyGoodsRequest) (*
 		return &api.GetBuyGoodsResponse{Goods: filteredBuyGoods}, nil
 	}
 
+	if in.GoodBuyId != "" {
+		var filteredBuyGoods []*api.BuyGood
+		for _, buyGood := range buyGoods {
+			if buyGood.GoodId == in.GoodBuyId {
+				filteredBuyGoods = append(filteredBuyGoods, buyGood)
+			}
+		}
+		return &api.GetBuyGoodsResponse{Goods: filteredBuyGoods}, nil
+	}
+
 	if in.StationId != "" {
 		var filteredBuyGoods []*api.BuyGood
 		for _, buyGood := range buyGoods {
@@ -151,10 +161,15 @@ func main() {
 
 	go func() {
 		log.Println("Starting HTTP server on port 8080")
+		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			fmt.Fprintln(w, "Welcome to the info service")
+		})
+
 		http.HandleFunc("/goods", func(w http.ResponseWriter, r *http.Request) {
 			if r.Method == "GET" {
 				http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 			} else if r.Method == "POST" {
+				// TODO: May change to request body json format
 				priceInfosStr := r.FormValue("priceInfos")
 				action := r.FormValue("action")
 
@@ -170,8 +185,7 @@ func main() {
 				if action == "buy" {
 					utils.UpdateBuyGoodPrice(rdb, priceInfos)
 				} else if action == "sell" {
-					// TODO:
-					http.Error(w, "Invalid action", http.StatusBadRequest)
+					utils.UpdateSellGoodPrice(rdb, priceInfos)
 				} else {
 					http.Error(w, "Invalid action", http.StatusBadRequest)
 				}

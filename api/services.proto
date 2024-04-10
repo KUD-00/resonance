@@ -68,6 +68,7 @@ service InfoService {
 message GetSellGoodsRequest {
   string stationId = 1;
   string goodUniqueId = 2;
+  string goodSellId = 3;
 }
 
 message GetSellGoodsResponse {
@@ -77,6 +78,7 @@ message GetSellGoodsResponse {
 message GetBuyGoodsRequest {
   string stationId = 1;
   string goodUniqueId = 2;
+  string goodBuyId = 3;
 }
 
 message GetBuyGoodsResponse {

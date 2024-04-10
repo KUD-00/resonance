@@ -112,7 +112,6 @@ module "redis-service" {
   }
 }
 
-
 module "info-service" {
   source = "./modules/k8s"
 
@@ -167,23 +166,56 @@ module "calculate-service" {
   ]
 }
 
+module "frontend-service" {
+  source = "./modules/k8s"
+
+  name = "frontend"
+
+  image          = "ghcr.io/kud-00/resonance/frontend:main"
+  replicas       = 1
+  port = [
+    {
+      name = "http",
+      container_port = 8080
+      service_port = 80
+    }
+  ]
+
+  environment_variables = {
+    PROVIDER = "Terraform"
+  }
+
+  depends_on = [
+    module.calculate-service
+  ]
+}
+
 module "k8s_ingress" {
   source = "./modules/k8s-ingress"
 
-  domain = "api.resonance.rughzenhaide.com"
-  services = [
-    {
-      name = "info"
-      port = 80
-      path = "/goodsinfo"
-    },
-    {
-      name = "calculate"
-      port = 80
-      path = "/route"
-    }
-  ]
+  domains = {
+    "resonance.kud.me" = [
+      {
+        name = "frontend"
+        port = 80
+        path = "/"
+      },
+    ],
+    "api.resonance.kud.me" = [
+      {
+        name = "info"
+        port = 80
+        path = "/goods"
+      },
+      {
+        name = "calculate"
+        port = 80
+        path = "/calculate"
+      }
+    ]
+  }
 }
+
 
 /* module "api-gateway" {
   source = "./modules/api-gateway"

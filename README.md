@@ -28,7 +28,8 @@ Next.js前后端混写的前身：github.com/KUD-00/resonance-helper
 - info: 从数据库中获取数据/储存数据
 - calculate: 计算数据
 - api: grpc定义
-- gateway: 负载均衡？流量转发？防火墙？
+- api-gateway: 负载均衡？流量转发？防火墙？
+- frontend: 前端
 
 ## 数据库定义
 
