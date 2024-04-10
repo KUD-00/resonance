@@ -119,6 +119,7 @@ module "info-service" {
 
   image          = "ghcr.io/kud-00/resonance/info:main"
   replicas       = 1
+  service_type = "ClusterIP"
 
   port = [
     {
@@ -149,6 +150,8 @@ module "calculate-service" {
 
   image          = "ghcr.io/kud-00/resonance/calculate:main"
   replicas       = 1
+  service_type = "ClusterIP"
+
   port = [
     {
       name = "http",
@@ -173,6 +176,8 @@ module "frontend-service" {
 
   image          = "ghcr.io/kud-00/resonance/frontend:main"
   replicas       = 1
+  service_type = "ClusterIP"
+
   port = [
     {
       name = "http",

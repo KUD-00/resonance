@@ -1,4 +1,4 @@
-FROM node:21 as builder
+FROM node:20 as builder
 
 WORKDIR /app
 
@@ -8,6 +8,7 @@ RUN npm install
 
 COPY frontend/public/ public/
 COPY frontend/src/ src/
+COPY frontend/grpc/ grpc/
 
 COPY frontend/tailwind.config.js .
 COPY frontend/postcss.config.js .
