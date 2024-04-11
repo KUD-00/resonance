@@ -1,5 +1,7 @@
 # 雷索纳斯数据站
 
+2024.4.11: gRPC不支持生成es6代码。垃圾，滚
+
 完全没有完成，public仓库是因为github actions私有仓库不好搞
 
 Next.js前后端混写的前身：github.com/KUD-00/resonance-helper
@@ -12,6 +14,7 @@ Next.js前后端混写的前身：github.com/KUD-00/resonance-helper
 
 - [x] 实践微服务架构
 - [x] 实践gRPC
+    - [过去多少年了gRPC protoc仍不支持生成es6代码](https://github.com/protocolbuffers/protobuf-javascript/issues/75#issuecomment-1288634640)
 - [x] 实践k8s
 - [x] 实践AWS
 - [x] 实践Terraform

@@ -11,7 +11,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import * as jspb from 'google-protobuf';
+var jspb = require('google-protobuf');
 var goog = jspb;
 var global = (function() {
   if (this) { return this; }
@@ -3152,4 +3152,5 @@ proto.api.GetStationsResponse.prototype.clearStationsList = function() {
   return this.setStationsList([]);
 };
 
-export const { GetBuyGoodsRequest, GetBuyGoodsResponse, GetSellGoodsRequest, GetSellGoodsResponse, GetStationsRequest, GetStationsResponse } = proto.api;
+
+goog.object.extend(exports, proto.api);
