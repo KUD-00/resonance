@@ -1,8 +1,8 @@
 // GENERATED CODE -- DO NOT EDIT!
 
 'use strict';
-import * as grpc from '@grpc/grpc-js';
-import * as services_pb from './services_pb.js';
+var grpc = require('@grpc/grpc-js');
+var services_pb = require('./services_pb.js');
 
 function serialize_api_GetBuyGoodsRequest(arg) {
   if (!(arg instanceof services_pb.GetBuyGoodsRequest)) {
@@ -70,7 +70,8 @@ function deserialize_api_GetStationsResponse(buffer_arg) {
   return services_pb.GetStationsResponse.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
-export const InfoServiceService = {
+
+var InfoServiceService = exports.InfoServiceService = {
   getSellGoods: {
     path: '/api.InfoService/GetSellGoods',
     requestStream: false,
@@ -106,4 +107,4 @@ export const InfoServiceService = {
   },
 };
 
-export const InfoServiceClient = grpc.makeGenericClientConstructor(InfoServiceService);
+exports.InfoServiceClient = grpc.makeGenericClientConstructor(InfoServiceService);

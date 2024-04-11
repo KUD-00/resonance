@@ -1,23 +1,23 @@
-FROM node:20 as builder
+FROM node:21
 
 WORKDIR /app
 
-COPY frontend/package.json .
+COPY frontend/package*.json ./
 
 RUN npm install
 
-COPY frontend/public/ public/
-COPY frontend/src/ src/
-COPY frontend/grpc/ grpc/
-
-COPY frontend/tailwind.config.js .
-COPY frontend/postcss.config.js .
-COPY frontend/tsconfig.json .
+COPY frontend/utils ./utils
+COPY frontend/app ./app
+COPY frontend/grpc ./grpc
+COPY frontend/public ./public
+COPY frontend/next.config.mjs ./next.config.mjs
+COPY frontend/tailwind.config.ts ./tailwind.config.ts
+COPY frontend/tsconfig.json ./tsconfig.json
 
 RUN npm run build
 
-RUN [ -d "/app/dist" ] || exit 1
+RUN [ -d "/app/.next" ] || exit 1
 
-EXPOSE 8080
+EXPOSE 3000
 
-CMD ["npm", "run", "start"]
+CMD ["npm", "run", "dev"]

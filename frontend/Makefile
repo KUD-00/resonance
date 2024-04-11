@@ -6,9 +6,6 @@ ESBUILD=./node_modules/.bin/esbuild
 
 all: gen_ts
 
-convert_to_esm:
-	$(ESBUILD) $(GEN_DIR)/*.js --outdir=$(GEN_DIR) --format=esm --allow-overwrite
-
 gen_ts:
 	$(PROTOC) \
 	--plugin=protoc-gen-ts=$(PROTOC_GEN_TS_PATH) \

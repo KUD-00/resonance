@@ -1,4 +1,4 @@
-import { Link } from 'waku';
+import Link from 'next/link';
 
 export default async function HomePage() {
   const data = {
@@ -12,15 +12,9 @@ export default async function HomePage() {
       <title>{data.title}</title>
       <h1 className="text-4xl font-bold tracking-tight">{data.headline}</h1>
       <p className="mt-4">{data.body}</p>
-      <Link to="/about" className="mt-4 inline-block underline">
+      <Link href="/about" className="mt-4 inline-block underline">
         测试gRPC
       </Link>
     </div>
   );
 }
-
-export const getConfig = async () => {
-  return {
-    render: 'static',
-  };
-};
