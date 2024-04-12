@@ -2,24 +2,12 @@
 
 完全没有完成，public仓库是因为github actions私有仓库不好搞
 
-Next.js前后端混写的前身：github.com/KUD-00/resonance-helper
+2024.4.12: 因为AWS很贵所以项目暂且搁置，没有完成的预定，只是对我来说的新奇技术的实验场
 
-抛弃原因：性能太差 + Next.js写腻了
+目前完成的部分：
 
-## 技术目标
-
-工具目标：
-
-- [x] 实践微服务架构
-- [x] 实践gRPC
-- [x] 实践k8s
-- [x] 实践AWS
-- [x] 实践Terraform
-- [ ] 实践Test Driven Development
-
-性能目标:
-
-- [ ] 前端任何页面在2s以内生成页面
+- 同一k8s集群下，后端服务之间以及与前端服务之间的gRPC通信
+- 所有基础设施的代码化（Terraform）
 
 ## 服务定义
 
